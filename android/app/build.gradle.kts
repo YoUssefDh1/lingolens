@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.lingolens"
         
         // ML Kit requires at least 21. Don't use flutter.minSdkVersion here.
-        minSdk = 21 
+        minSdk = flutter.minSdkVersion 
         
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

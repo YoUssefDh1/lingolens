@@ -2,10 +2,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'services/ml_service.dart';
-import 'results_screen.dart'; // We'll create this next
+import 'results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(bool)? toggleTheme;
+  final Function(String)? changeLanguage;
+
+  const HomeScreen({
+    super.key,
+    this.toggleTheme,
+    this.changeLanguage,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,19 +31,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final File file = File(image.path);
-      
-      // 1. Recognize Text
+
       final String text = await _mlService.recognizeText(file);
-      
-      // 2. Identify Language
+
+      if (text.trim().isEmpty) {
+        throw Exception("No text detected.");
+      }
+
       final String langCode = await _mlService.identifyLanguage(text);
 
-      // Navigate to results
       if (!mounted) return;
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultsScreen(
+          builder: (_) => ResultsScreen(
             imageFile: file,
             recognizedText: text,
             languageCode: langCode,
@@ -45,48 +54,153 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error processing image: $e")),
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Choose Image Source",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _processImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _processImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _mlService.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('LingoLens AI')),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator()) 
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Text("Select an image to translate", style: TextStyle(fontSize: 18)),
-                const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildActionButton(Icons.camera_alt, "Camera", ImageSource.camera),
-                    _buildActionButton(Icons.photo_library, "Gallery", ImageSource.gallery),
-                  ],
-                ),
-              ],
-            ),
-          ),
-    );
-  }
+    final theme = Theme.of(context);
 
-  Widget _buildActionButton(IconData icon, String label, ImageSource source) {
-    return Column(
-      children: [
-        IconButton.filledTonal(
-          iconSize: 40,
-          onPressed: () => _processImage(source),
-          icon: Icon(icon),
-        ),
-        Text(label),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("LingoLens AI"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // We'll implement settings screen next
+            },
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
+
+                  // --- App Icon ---
+                  Icon(
+                    Icons.translate,
+                    size: 80,
+                    color: theme.colorScheme.primary,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // --- App Title ---
+                  Text(
+                    "Translate the World Instantly",
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    "Capture text from images and translate it instantly using AI-powered recognition.",
+                    style: theme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  // --- Scan Button ---
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: FilledButton.icon(
+                      onPressed: _showImageSourceDialog,
+                      icon: const Icon(Icons.document_scanner),
+                      label: const Text(
+                        "Scan Text",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 60),
+
+                  // --- About Section ---
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "About",
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    "LingoLens AI is a mobile application that uses Google ML Kit "
+                    "to extract text from images, detect its language, and translate "
+                    "it instantly. Designed for travelers, students, and professionals.",
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

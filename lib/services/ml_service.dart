@@ -4,28 +4,82 @@ import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
 class MLService {
-  // 1. Initialize the OCR engine
-  final TextRecognizer _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-  
-  // 2. Initialize Language Identifier
-  final LanguageIdentifier _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
+  final TextRecognizer _textRecognizer =
+      TextRecognizer(script: TextRecognitionScript.latin);
 
-  // Method to extract text from an image file
+  final LanguageIdentifier _languageIdentifier =
+      LanguageIdentifier(confidenceThreshold: 0.5);
+
+  OnDeviceTranslator? _translator;
+
+  // -------------------------------
+  // TEXT RECOGNITION
+  // -------------------------------
   Future<String> recognizeText(File imageFile) async {
     final inputImage = InputImage.fromFile(imageFile);
-    final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
+    final RecognizedText recognizedText =
+        await _textRecognizer.processImage(inputImage);
+
     return recognizedText.text;
   }
 
-  // Method to identify the language
+  // -------------------------------
+  // LANGUAGE IDENTIFICATION
+  // -------------------------------
   Future<String> identifyLanguage(String text) async {
-    final String languageCode = await _languageIdentifier.identifyLanguage(text);
-    return languageCode; // Returns codes like 'en', 'fr', 'ar'
+    if (text.trim().isEmpty) return 'und';
+
+    final languageCode =
+        await _languageIdentifier.identifyLanguage(text);
+
+    return languageCode;
   }
 
-  // Close resources to prevent memory leaks (Very important for mobile!)
+  // -------------------------------
+  // TRANSLATION
+  // -------------------------------
+  Future<String> translateText(
+      String text,
+      String sourceLanguage,
+      String targetLanguage,
+      ) async {
+    if (text.trim().isEmpty) return '';
+
+    try {
+      final source =
+          TranslateLanguage.values.firstWhere(
+                (e) => e.bcpCode == sourceLanguage,
+            orElse: () => TranslateLanguage.english,
+          );
+
+      final target =
+          TranslateLanguage.values.firstWhere(
+                (e) => e.bcpCode == targetLanguage,
+            orElse: () => TranslateLanguage.english,
+          );
+
+      _translator?.close();
+
+      _translator = OnDeviceTranslator(
+        sourceLanguage: source,
+        targetLanguage: target,
+      );
+
+      final translatedText =
+      await _translator!.translateText(text);
+
+      return translatedText;
+    } catch (e) {
+      return "Translation unavailable";
+    }
+  }
+
+  // -------------------------------
+  // DISPOSE
+  // -------------------------------
   void dispose() {
     _textRecognizer.close();
     _languageIdentifier.close();
+    _translator?.close();
   }
 }
