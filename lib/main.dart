@@ -79,18 +79,36 @@ class _LingoLensAppState extends State<LingoLensApp> {
 
   @override
   Widget build(BuildContext context) {
+    final seed = const Color(0xFF0EA5A4);
+
     return MaterialApp(
       title: 'LingoLens AI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
-        brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light),
+        appBarTheme: AppBarTheme(
+          backgroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light).primary,
+          foregroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light).onPrimary,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light).primary,
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
-        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
+        appBarTheme: AppBarTheme(
+          backgroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark).primary,
+          foregroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark).onPrimary,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark).primary,
+          ),
+        ),
       ),
       themeMode: _themeMode,
       locale: _locale,

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Limit the displayed size of the splash bitmap so it keeps aspect ratio
+         instead of stretching to fill the screen. Adjust width/height as needed. -->
+    <item android:width="260dp" android:height="260dp" android:gravity="center">
+        <bitmap android:src="@drawable/splash" android:antialias="true" android:gravity="center" />
+    </item>
+</layer-list>
