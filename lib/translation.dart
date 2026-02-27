@@ -112,7 +112,7 @@ class TranslationRepository extends ChangeNotifier {
 final TranslationRepository translationRepo = TranslationRepository();
 
 class LearningFeed extends StatefulWidget {
-  const LearningFeed({Key? key}) : super(key: key);
+  const LearningFeed({super.key});
 
   @override
   State<LearningFeed> createState() => _LearningFeedState();

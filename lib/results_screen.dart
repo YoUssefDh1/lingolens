@@ -118,7 +118,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
                       // -------- TARGET LANGUAGE DROPDOWN --------
                       DropdownButtonFormField<String>(
-                        value: _targetLanguage,
+                        initialValue: _targetLanguage,
                         decoration: InputDecoration(
                           labelText: t['translateTo'] ?? 'Translate To',
                           border: const OutlineInputBorder(),

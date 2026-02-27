@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.all(12),
                       child: Card(
                         elevation: 0,
-                        color: theme.colorScheme.background,
+                        color: theme.colorScheme.surface,
                         child: TabBarView(
                           children: [
                             // SCAN tab — keep the original scan card UI

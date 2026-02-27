@@ -19,7 +19,7 @@ class MLService {
   }
 
   Future<String> translateText(String text, String sourceLanguage, String targetLanguage) async {
-    TranslateLanguage _map(String code) {
+    TranslateLanguage map(String code) {
       switch (code.toLowerCase()) {
         case 'fr':
           return TranslateLanguage.french;
@@ -31,8 +31,8 @@ class MLService {
       }
     }
 
-    final sourceModel = _map(sourceLanguage);
-    final targetModel = _map(targetLanguage);
+    final sourceModel = map(sourceLanguage);
+    final targetModel = map(targetLanguage);
 
     final onDeviceTranslator = OnDeviceTranslator(
       sourceLanguage: sourceModel,
